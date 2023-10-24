@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blumenklassifizierung</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Blumenklassifizierung</h1>
+
+        <form id="upload-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="imageInput">Bild auswählen</label>
+                <input type="file" class="form-control-file" id="imageInput" accept="image/*">
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Bild hochladen</button>
+        </form>
+
+        <div class="mt-3" id="result-container" style="display: none;">
+            <h2>Ergebnis:</h2>
+            <p id="result-text">Result Text.</p>
+        </div>
+    </div>
+</body>
+</html>
