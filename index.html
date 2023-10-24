@@ -6,68 +6,89 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         /* Fügen Sie hier ggf. zusätzliches benutzerdefiniertes CSS hinzu */
+        #loading-spinner {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1>Blumenklassifizierung</h1>
+<div class="container mt-5">
+    <h1>Blumenklassifizierung</h1>
 
-        <form id="upload-form" enctype="multipart/form-data">
-            <div class="form-group">
-                <label for="imageInput">Bild auswählen</label>
-                <input type="file" class="form-control-file" id="imageInput" accept="image/*">
-            </div>
-            <button type="submit" class="btn btn-primary mt-3">Bild hochladen</button>
-        </form>
-
-        <div class="mt-3" id="image-container" style="display: none;">
-            <img id="uploaded-image" src="" alt="Hochgeladenes Bild" class="img-fluid">
+    <form id="upload-form" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="imageInput">Bild auswählen</label>
+            <input type="file" class="form-control-file" id="imageInput" accept="image/*">
         </div>
-
-        <div class="mt-3" id="result-container" style="display: none;">
-            <h2>Ergebnis:</h2>
-            <p id="result-text">Result Text.</p>
+        <button type="submit" class="btn btn-primary mt-3">Bild hochladen</button>
+        <div id="loading-spinner" class="spinner-border text-primary mt-3" role="status">
+            <span class="sr-only">Lädt...</span>
         </div>
+    </form>
+
+    <div class="mt-3" id="result-container" style="display: none;">
+        <h2>Ergebnis:</h2>
+        <p id="result-text">Result Text.</p>
+    </div>
+    <div class="mt-3" id="image-container" style="display: none;">
+        <img id="uploaded-image" src="" alt="Hochgeladenes Bild" class="img-fluid">
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"></script>
-    <script>
-        // TensorFlow.js-Code zur Bildklassifizierung
+    <div class="alert alert-danger mt-3" id="error-message" style="display: none;">
+        Die hochgeladene Datei ist kein gültiges Bild. Bitte wählen Sie ein Bild aus.
+    </div>
+</div>
 
-        const img = document.getElementById('uploaded-image');
-        const resultContainer = document.getElementById('result-container');
-        const imageContainer = document.getElementById('image-container');
-        const resultText = document.getElementById('result-text');
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.0.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.0.0"></script>
+<script>
+    const img = document.getElementById('uploaded-image');
+    const resultContainer = document.getElementById('result-container');
+    const imageContainer = document.getElementById('image-container');
+    const resultText = document.getElementById('result-text');
+    const errorMessage = document.getElementById('error-message');
+    const loadingSpinner = document.getElementById('loading-spinner');
 
-        document.getElementById('upload-form').addEventListener('submit', async function (e) {
-            e.preventDefault();
+    document.getElementById('upload-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
 
-            const imageInput = document.getElementById('imageInput');
-            const imageFile = imageInput.files[0];
+        const imageInput = document.getElementById('imageInput');
+        const imageFile = imageInput.files[0];
 
-            if (!imageFile) {
-                alert('Bitte wählen Sie zuerst ein Bild aus.');
-                return;
-            }
+        if (!imageFile) {
+            alert('Bitte wählen Sie zuerst ein Bild aus.');
+            return;
+        }
 
-            const model = await mobilenet.load();
+        if (!imageFile.type.startsWith('image')) {
+            // Zeige Fehlermeldung, wenn keine Bilddatei ausgewählt wurde.
+            errorMessage.style.display = 'block';
+            loadingSpinner.style.display = 'none';
+            img.src = ''; // Zurücksetzen der Bildquelle
+            return;
+        }
 
-            const imageElement = new Image();
+        errorMessage.style.display = 'none';
+        loadingSpinner.style.display = 'block';
 
-            imageElement.onload = async () => {
-                img.src = URL.createObjectURL(imageFile);
+        const model = await mobilenet.load();
 
-                model.classify(imageElement).then(predictions => {
-                    const topPrediction = predictions[0];
-                    resultText.textContent = `Es könnte sich um die Blumenart "${topPrediction.className}" handeln (Wahrscheinlichkeit: ${Math.round(topPrediction.probability * 100)}%).`;
-                    resultContainer.style.display = 'block'; // Ergebnis anzeigen
-                    imageContainer.style.display = 'block'; // Bild anzeigen
-                });
-            };
+        const imageElement = new Image();
 
-            imageElement.src = URL.createObjectURL(imageFile);
-        });
-    </script>
+        imageElement.onload = async () => {
+            loadingSpinner.style.display = 'none';
+            img.src = URL.createObjectURL(imageFile);
+            imageContainer.style.display = 'block';
+
+            model.classify(imageElement).then(predictions => {
+                const topPrediction = predictions[0];
+                resultText.textContent = `Es könnte sich um die Blumenart "${topPrediction.className}" handeln (Wahrscheinlichkeit: ${Math.round(topPrediction.probability * 100)}%).`;
+                resultContainer.style.display = 'block'; // Ergebnis anzeigen
+            });
+        };
+
+        imageElement.src = URL.createObjectURL(imageFile);
+    });
+</script>
 </body>
 </html>
