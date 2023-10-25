@@ -5,7 +5,6 @@
     <title>Blumenklassifizierung</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
-        /* Fügen Sie hier ggf. zusätzliches benutzerdefiniertes CSS hinzu */
         #loading-spinner {
             display: none;
         }
@@ -17,8 +16,8 @@
 
     <form id="upload-form" enctype="multipart/form-data">
         <div class="form-group">
-            <label for="imageInput">Bild auswählen</label>
-            <input type="file" class="form-control-file" id="imageInput" accept="image/*">
+            <label for="imageInput">Bild auswählen (max. 5 MB)</label>
+            <input type="file" class="form-control-file" id="imageInput" accept="image/*" size="5000000">
         </div>
         <button type="submit" class="btn btn-primary mt-3">Bild hochladen</button>
         <div id="loading-spinner" class="spinner-border text-primary mt-3" role="status">
