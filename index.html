@@ -60,12 +60,26 @@
         }
 
         if (!imageFile.type.startsWith('image')) {
-            // Zeige Fehlermeldung, wenn keine Bilddatei ausgewählt wurde.
             errorMessage.style.display = 'block';
             loadingSpinner.style.display = 'none';
-            img.src = ''; // Zurücksetzen der Bildquelle
+            img.src = '';
             return;
         }
+
+        // Funktion zum Konvertieren des Bilds in ein PNG
+        const convertToPNG = async (inputFile) => {
+            const imageBitmap = await createImageBitmap(inputFile);
+            const canvas = document.createElement('canvas');
+            canvas.width = imageBitmap.width;
+            canvas.height = imageBitmap.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(imageBitmap, 0, 0);
+            return new Promise((resolve, reject) => {
+                canvas.toBlob((blob) => {
+                    resolve(new File([blob], 'image.png', { type: 'image/png' }));
+                });
+            });
+        };
 
         errorMessage.style.display = 'none';
         loadingSpinner.style.display = 'block';
@@ -79,10 +93,14 @@
             img.src = URL.createObjectURL(imageFile);
             imageContainer.style.display = 'block';
 
+            const pngImage = await convertToPNG(imageFile);
+
             model.classify(imageElement).then(predictions => {
                 const topPrediction = predictions[0];
                 resultText.textContent = `Es könnte sich um die Blumenart "${topPrediction.className}" handeln (Wahrscheinlichkeit: ${Math.round(topPrediction.probability * 100)}%).`;
-                resultContainer.style.display = 'block'; // Ergebnis anzeigen
+                resultContainer.style.display = 'block';
+
+                img.src = URL.createObjectURL(pngImage);
             });
         };
 
